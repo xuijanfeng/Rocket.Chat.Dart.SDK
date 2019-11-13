@@ -22,6 +22,20 @@ class _ddpTokenLoginRequest {
   }
 }
 
+class _ddpOAuthLoginRequest {
+  String token;
+  String secret;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'oauth': {
+        'credentialToken': token,
+        'credentialSecret': secret,
+      }
+    };
+  }
+}
+
 class _ddpUser {
   String email;
   String username;
@@ -51,10 +65,26 @@ class _ddpPassword {
 }
 
 abstract class _ClientUsersMixin implements _DdpClientWrapper {
+  Future<dynamic> logout() {
+    Completer completer = Completer();
+    this
+        ._getDdpClient()
+        .call('logout', [])
+        .then((call) => completer.complete(call))
+        .catchError((error) => completer.completeError(error));
+    return completer.future;
+  }
+
   Future<User> login(UserCredentials credentials) {
     dynamic request;
-    if (credentials.token != null && credentials != '') {
-      request = _ddpTokenLoginRequest()..token = credentials.token;
+    if (credentials.token != null && credentials.token.isNotEmpty) {
+      if (credentials.secret != null && credentials.secret.isNotEmpty) {
+        request = _ddpOAuthLoginRequest()
+          ..token = credentials.token
+          ..secret = credentials.secret;
+      } else {
+        request = _ddpTokenLoginRequest()..token = credentials.token;
+      }
     } else {
       final digest = sha256.convert(utf8.encode(credentials.password));
       request = _ddpLoginRequest()
