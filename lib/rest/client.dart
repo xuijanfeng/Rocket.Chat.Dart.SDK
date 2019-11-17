@@ -2,10 +2,12 @@ library rest;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:rocket_chat_dart/models/models.dart';
+import 'package:rocket_chat_dart/models/setting.dart';
 
 part 'channels.dart';
 part 'chat.dart';
@@ -15,6 +17,7 @@ part 'im.dart';
 part 'rooms.dart';
 part 'subscriptions.dart';
 part 'users.dart';
+part 'setting.dart';
 
 class _AuthInfo {
   _AuthInfo(this._id, this._token);
@@ -24,8 +27,7 @@ class _AuthInfo {
 }
 
 void _hackResponseHeader(http.Response response) {
-  response.headers['content-type'] =
-      '${response.headers['content-type']}; charset=utf-8';
+  response.headers['content-type'] = '${response.headers['content-type']}; charset=utf-8';
 }
 
 abstract class _ClientWrapper {
@@ -42,7 +44,8 @@ class Client extends Object
         _ClientSubscriptionsMixin,
         _ClientIMMixin,
         _ClientChatMixin,
-        _ClientGroupsMixin
+        _ClientGroupsMixin,
+        _ClientSettingMixin
     implements _ClientWrapper {
   final String protocol;
   final String host;
