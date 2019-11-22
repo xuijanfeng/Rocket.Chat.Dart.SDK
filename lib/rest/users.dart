@@ -52,21 +52,17 @@ abstract class _ClientUsersMixin implements _ClientWrapper {
 //根据用户名或者用户id查询账户登陆状态，什么都传，那么查询自己的
   Future<String> getPresence(String userId, String username) {
     Completer<String> completer = Completer();
-    String body = null;
+    StringBuffer query;
     if (userId != null) {
-      body = json.encode(<String, String>{'userId': userId});
+      query = StringBuffer('userId=$userId');
     } else if (username != null) {
-      body = json.encode(<String, String>{'username': username});
+      query = StringBuffer('username=$username');
     }
-    http
-        .post('${_getUrl()}/users.getPresence',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-User-Id': _auth._id,
-              'X-Auth-Token': _auth._token,
-            },
-            body: body)
-        .then((response) {
+    http.get('${_getUrl()}/users.getPresence?${query.toString()}', headers: {
+      'Content-Type': 'application/json',
+      'X-User-Id': _auth._id,
+      'X-Auth-Token': _auth._token,
+    }).then((response) {
       _hackResponseHeader(response);
       final data = json.decode(response.body)['presence'];
       completer.complete(data);
